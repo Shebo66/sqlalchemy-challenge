@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import numpy as np
 
 import sqlalchemy
@@ -48,8 +42,8 @@ def welcome():
         f"/api/v1.0/temp<br/>"
         f"/api/v1.0/tobs<br/>"
         f"/api/v1.0/stations"
+        f"/api/v1.0/temp/start/end"
     )
-
 
 @app.route("/api/v1.0/stations")
 def names():
@@ -103,24 +97,19 @@ def tobs():
 
     return jsonify(all_tobs)
 
-
-@app.route("/api/v1.0/temp/<start><end>")
-def temp(start,end):
+@app.route("/api/v1.0/temp/<start>/<end>")
+def dates(start,end):
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
     """Return a list of all tobs"""
     # Query all stations
-    temp = session.query(func.avg(measurement.tobs), func.max(measurement.tobs), func.min(measurement.tobs)).filter(measurement.date>=start).filter(measurement.date<=end).all()
-     
+    
+    temperature = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).filter(measurement.date>=start).filter(measurement.date<=end).all()
     session.close()
 
-    # Convert list of tuples into normal list
-    #all_prcp = list(np.ravel(results))
-    all_temp = temp
-
-    return jsonify(all_temp)
+   
+    return jsonify(temperature)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
